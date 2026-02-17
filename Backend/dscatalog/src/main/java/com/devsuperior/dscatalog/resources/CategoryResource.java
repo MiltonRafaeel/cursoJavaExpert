@@ -43,6 +43,6 @@ public class CategoryResource {
 				.path("/{id}")
 				.buildAndExpand(dto.getId())
 				.toUri();
-		return ResponseEntity.ok().body(result);	
+		return ResponseEntity.created(uri).body(result);	
 	}
 }
