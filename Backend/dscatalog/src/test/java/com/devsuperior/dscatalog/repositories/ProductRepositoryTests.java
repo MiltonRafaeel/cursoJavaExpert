@@ -1,5 +1,6 @@
 package com.devsuperior.dscatalog.repositories;
 
+import java.time.Instant;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Assertions;
@@ -9,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 import com.devsuperior.dscatalog.entities.Product;
+import com.devsuperior.dscatalog.tests.Factory;
 
 @DataJpaTest
 public class ProductRepositoryTests {
@@ -17,10 +19,12 @@ public class ProductRepositoryTests {
 	private ProductRepository repository;
 	
 	private long existId;
+	private long countTotalProduct;
 	
 	@BeforeEach
 	void setUp() throws Exception {
 		existId = 1L;
+		countTotalProduct = 25L;
 	}
 	
 	@Test
@@ -30,5 +34,17 @@ public class ProductRepositoryTests {
 		//A
 		Optional<Product> result = repository.findById(existId);
 		Assertions.assertFalse(result.isPresent());
+	}
+	
+	@Test
+	public void saveShouldPersistWithAutoincrementWhenIdIsNull() {
+		
+		Product product = Factory.createProduct();
+		product.setId(null);
+		
+		product = repository.save(product);
+		
+		Assertions.assertNotNull(product.getId());
+		Assertions.assertEquals( countTotalProduct + 1, product.getId() );
 	}
 }
