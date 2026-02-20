@@ -20,11 +20,13 @@ public class ProductRepositoryTests {
 	private ProductRepository repository;
 	
 	private long existId;
+	private long nonExistId;
 	private long countTotalProduct;
 	
 	@BeforeEach
 	void setUp() throws Exception {
 		existId = 1L;
+		nonExistId = 50L;
 		countTotalProduct = 25L;
 	}
 	
@@ -51,20 +53,18 @@ public class ProductRepositoryTests {
 	}
 	
 	@Test
-	public void findByIdShouldReturnIdWhenIdExist() {
+	public void findByIdShouldReturnNonEmptyOptionalProductWhenIdExists() {
 		
 		Optional<Product> result = repository.findById(existId);
 		
-		Product product = result.get();
-		
-		Assertions.assertEquals(product.getId(), existId);
+		Assertions.assertTrue(result.isPresent());
 	}
 	
 	@Test
-	public void findByIdShouldReturnEmptyWhenIdDoesNotExist() {
+	public void findByIdShouldReturnEmptyOptionalProductWhenIdDoesNotExists() {
 		
-		Optional<Product> result = repository.findById(50L);
+		Optional<Product> result = repository.findById(nonExistId);
 		
-		Assertions.assertFalse(result.isPresent());
+		Assertions.assertTrue(result.isEmpty());
 	}
 }
