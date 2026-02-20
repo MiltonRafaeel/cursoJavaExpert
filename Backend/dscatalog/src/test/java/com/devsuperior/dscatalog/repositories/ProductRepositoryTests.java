@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 import com.devsuperior.dscatalog.entities.Product;
+import com.devsuperior.dscatalog.services.exceptions.ResourceNotFoundException;
 import com.devsuperior.dscatalog.tests.Factory;
 
 @DataJpaTest
@@ -33,6 +34,7 @@ public class ProductRepositoryTests {
 		repository.deleteById(existId);
 		//A
 		Optional<Product> result = repository.findById(existId);
+		//A
 		Assertions.assertFalse(result.isPresent());
 	}
 	
@@ -46,5 +48,23 @@ public class ProductRepositoryTests {
 		
 		Assertions.assertNotNull(product.getId());
 		Assertions.assertEquals( countTotalProduct + 1, product.getId() );
+	}
+	
+	@Test
+	public void findByIdShouldReturnIdWhenIdExist() {
+		
+		Optional<Product> result = repository.findById(existId);
+		
+		Product product = result.get();
+		
+		Assertions.assertEquals(product.getId(), existId);
+	}
+	
+	@Test
+	public void findByIdShouldReturnEmptyWhenIdDoesNotExist() {
+		
+		Optional<Product> result = repository.findById(50L);
+		
+		Assertions.assertFalse(result.isPresent());
 	}
 }
