@@ -7,9 +7,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import com.devsuperior.dscatalog.repositories.ProductRepository;
+import com.devsuperior.dscatalog.services.exceptions.DatabaseException;
 import com.devsuperior.dscatalog.services.exceptions.ResourceNotFoundException;
 
 @ExtendWith(SpringExtension.class)
@@ -36,7 +38,7 @@ public class ProductServiceTests {
 		Mockito.when(repository.existsById(dependentId)).thenReturn(true);
 
 		Mockito.doNothing().when(repository).deleteById(existId);
-		Mockito.doThrow(ResourceNotFoundException.class).when(repository).deleteById(nonExistId);
+		Mockito.doThrow(DataIntegrityViolationException.class).when(repository).deleteById(dependentId);
 	}
 	
 	@Test
@@ -53,6 +55,13 @@ public class ProductServiceTests {
 	public void deleteShouldThrowResourceNotFoundExceptionWhenIdDoesNotExist() {
 		Assertions.assertThrows(ResourceNotFoundException.class, () -> {
 			service.delete(nonExistId);
+		});
+	}
+	
+	@Test
+	public void deleteShouldThrowDatabaseExceptionWhenDependentId() {
+		Assertions.assertThrows(DatabaseException.class, () -> {
+			service.delete(dependentId);
 		});
 	}
 }
