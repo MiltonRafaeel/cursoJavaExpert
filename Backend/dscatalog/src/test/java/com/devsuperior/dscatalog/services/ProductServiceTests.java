@@ -48,4 +48,11 @@ public class ProductServiceTests {
 		
 		Mockito.verify(repository, Mockito.times(1)).deleteById(existId);
 	}
+	
+	@Test
+	public void deleteShouldThrowResourceNotFoundExceptionWhenIdDoesNotExist() {
+		Assertions.assertThrows(ResourceNotFoundException.class, () -> {
+			service.delete(nonExistId);
+		});
+	}
 }
