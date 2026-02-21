@@ -51,12 +51,12 @@ public class ProductServiceTests {
 		//quando -> argumento -> acao(quando acontecer algo, passando o argumento, faca isso(retorne page))
 		Mockito.when(repository.findAll( (Pageable) ArgumentMatchers.any())).thenReturn(page);
 		
-		//quando -> argumento -> acao(quando acontecer algo, passando o argumento, faca isso(retorne product))
-		Mockito.when(repository.save(ArgumentMatchers.any())).thenReturn(product);
-		
 		//aqui simulei duas situacoes, quando encontro o objeto por id e quando nao encontro.
 		Mockito.when(repository.findById(existId)).thenReturn(Optional.of(product));
 		Mockito.when(repository.findById(nonExistId)).thenReturn(Optional.empty());
+		
+		//quando -> argumento -> acao(quando acontecer algo, passando o argumento, faca isso(retorne product))
+		Mockito.when(repository.save(ArgumentMatchers.any())).thenReturn(product);
 
 		//quando -> acao(quando acontecer algo, faca isso)
 		Mockito.when(repository.existsById(existId)).thenReturn(true);
@@ -78,6 +78,23 @@ public class ProductServiceTests {
 		
 		Assertions.assertNotNull(result);
 		Mockito.verify(repository, Mockito.times(1)).findAll(pageable);
+	}
+	
+	@Test
+	public void findByIdShouldReturnObjectWhenExistId() {
+		
+		ProductDTO result = service.findById(existId);
+		
+		Assertions.assertNotNull(result);
+		Mockito.verify(repository, Mockito.times(1)).findById(existId);
+	}
+	
+	@Test
+	public void findByIdShouldReturnResourceNotFoundExceptionWhenDoesNotExistId() {
+		
+		Assertions.assertThrows(ResourceNotFoundException.class, () -> {
+			service.findById(nonExistId);
+		});
 	}
 	
 	@Test
