@@ -25,6 +25,9 @@ import com.devsuperior.dscatalog.services.exceptions.DatabaseException;
 import com.devsuperior.dscatalog.services.exceptions.ResourceNotFoundException;
 import com.devsuperior.dscatalog.tests.Factory;
 
+import jakarta.persistence.EntityNotFoundException;
+
+
 @ExtendWith(SpringExtension.class)
 public class ProductServiceTests {
 
@@ -67,6 +70,7 @@ public class ProductServiceTests {
 		Mockito.doNothing().when(repository).deleteById(existId);
 		Mockito.doThrow(DataIntegrityViolationException.class).when(repository).deleteById(dependentId);
 		Mockito.doThrow(ResourceNotFoundException.class).when(repository).deleteById(nonExistId);
+		Mockito.doThrow(EntityNotFoundException.class).when(repository).getReferenceById(nonExistId);
 	}
 	
 	@Test
@@ -95,6 +99,27 @@ public class ProductServiceTests {
 		Assertions.assertThrows(ResourceNotFoundException.class, () -> {
 			service.findById(nonExistId);
 		});
+	}
+		
+	@Test
+	public void updateShouldUpdateObjectWhenExistId() {
+		
+		Product aux = repository.getReferenceById(existId);
+		Product entity = Factory.createProduct();
+		ProductDTO dto = new ProductDTO(entity, entity.getCategories());
+		
+		entity = repository.save(entity);
+		Assertions.assertNotSame(entity, aux);
+		
+	}
+	
+	@Test
+	public void updateShouldReturnResourceNotFoundExceptionWhenDoesNotExistId() {
+			
+		Assertions.assertThrows(ResourceNotFoundException.class, () -> {
+			service.update(nonExistId, Factory.createProductDTO());
+		});
+		Mockito.verify(repository, Mockito.times(1)).getReferenceById(nonExistId);
 	}
 	
 	@Test
