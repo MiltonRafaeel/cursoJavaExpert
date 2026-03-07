@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.devsuperior.dscatalog.dto.ProductDTO;
+import com.devsuperior.dscatalog.projections.ProductProjection;
 import com.devsuperior.dscatalog.services.ProductService;
 
 import jakarta.validation.Valid;
@@ -29,6 +30,12 @@ public class ProductResource {
 	@Autowired
 	private ProductService service;
 
+	@GetMapping(value = "/teste")
+	public ResponseEntity<Page<ProductProjection>> teste(Pageable pageable) {		
+		Page<ProductProjection> result = service.testQuery(pageable);
+		return ResponseEntity.ok().body(result);
+	}
+	
 	@GetMapping
 	public ResponseEntity<Page<ProductDTO>> findAll(Pageable pageable) {		
 		Page<ProductDTO> result = service.findAllPaged(pageable);
