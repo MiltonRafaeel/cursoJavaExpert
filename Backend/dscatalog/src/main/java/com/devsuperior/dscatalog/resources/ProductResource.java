@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -29,16 +30,13 @@ public class ProductResource {
 	
 	@Autowired
 	private ProductService service;
-
-	@GetMapping(value = "/teste")
-	public ResponseEntity<Page<ProductProjection>> teste(Pageable pageable) {		
-		Page<ProductProjection> result = service.testQuery(pageable);
-		return ResponseEntity.ok().body(result);
-	}
 	
 	@GetMapping
-	public ResponseEntity<Page<ProductDTO>> findAll(Pageable pageable) {		
-		Page<ProductDTO> result = service.findAllPaged(pageable);
+	public ResponseEntity<Page<ProductProjection>> findAll(
+			@RequestParam(value = "name", defaultValue = "") String name,
+			@RequestParam(value = "categoryId", defaultValue = "0") String categoryId,
+			Pageable pageable) {		
+		Page<ProductProjection> result = service.findAllPaged(name, categoryId, pageable);
 		return ResponseEntity.ok().body(result);
 	}
 	
