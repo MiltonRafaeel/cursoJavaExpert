@@ -21,8 +21,9 @@ public class MovieService {
 	private MovieRepository repository;
 	
 	@Transactional(readOnly = true)
-	public Page<MovieCardDTO> findAll(Pageable pageable) {
-		Page<Movie> entity = repository.findAll(pageable);
+	public Page<MovieCardDTO> findAll(String genreId, Pageable pageable) {
+		Long converterGenreId = Long.parseLong(genreId);
+		Page<Movie> entity = repository.findAllPaged(converterGenreId, pageable);
 		return entity.map(x -> new MovieCardDTO(x));
 	}
 	
