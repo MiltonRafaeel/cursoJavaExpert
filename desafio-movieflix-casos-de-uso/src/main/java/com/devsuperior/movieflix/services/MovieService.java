@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.devsuperior.movieflix.dto.MovieCardDTO;
 import com.devsuperior.movieflix.dto.MovieDetailsDTO;
 import com.devsuperior.movieflix.entities.Movie;
+import com.devsuperior.movieflix.projections.MovieCardProjection;
 import com.devsuperior.movieflix.repositories.MovieRepository;
 import com.devsuperior.movieflix.services.exceptions.ResourceNotFoundException;
 
@@ -21,9 +22,8 @@ public class MovieService {
 	private MovieRepository repository;
 	
 	@Transactional(readOnly = true)
-	public Page<MovieCardDTO> findAll(String genreId, Pageable pageable) {
-		Long converterGenreId = Long.parseLong(genreId);
-		Page<Movie> entity = repository.findAllPaged(converterGenreId, pageable);
+	public Page<MovieCardDTO> findAll(Long genreId, Pageable pageable) {
+		Page<MovieCardProjection> entity = repository.searchAllPaged(genreId, pageable);
 		return entity.map(x -> new MovieCardDTO(x));
 	}
 	
