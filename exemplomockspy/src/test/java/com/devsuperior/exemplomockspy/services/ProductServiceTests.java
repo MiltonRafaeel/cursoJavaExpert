@@ -11,7 +11,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import com.devsuperior.exemplomockspy.dto.ProductDTO;
 import com.devsuperior.exemplomockspy.entities.Product;
@@ -54,8 +53,6 @@ public class ProductServiceTests {
 	public void insertShouldReturnProductDTOWhenValidDate() {
 
 		ProductService productSpy = Mockito.spy(service);
-		ReflectionTestUtils.setField(productSpy, "repository", repository);
-
 		Mockito.doNothing().when(productSpy).validateData(productDto);
 
 		ProductDTO result = productSpy.insert(productDto);
@@ -89,6 +86,46 @@ public class ProductServiceTests {
 		Assertions.assertThrows(InvalidDataException.class, () -> {
 			@SuppressWarnings("unused")
 			ProductDTO result = productSpy.insert(productDto);
+		});
+	}
+	
+	@Test
+	public void updateShouldReturnProductDtoWhenIdExistsAndValidData() {
+		
+		ProductService productSpy = Mockito.spy(service);
+		Mockito.doNothing().when(productSpy).validateData(productDto);
+		
+		ProductDTO result = productSpy.update(existId, productDto);
+		
+		Assertions.assertNotNull(result);
+		Assertions.assertEquals(result.getId(), existId);
+	}
+	
+	@Test
+	public void updateShouldReturnInvalidDataExceptionWhenIdExistsAndProductNameIsBlank() {
+		
+		productDto.setName("");
+
+		ProductService productSpy = Mockito.spy(service);
+		Mockito.doThrow(InvalidDataException.class).when(productSpy).validateData(productDto);
+
+		Assertions.assertThrows(InvalidDataException.class, () -> {
+			@SuppressWarnings("unused")
+			ProductDTO result = productSpy.update(existId, productDto);
+		});
+	}
+	
+	@Test
+	public void updateShouldReturnInvalidDataExceptionWhenIdExistsAndProductPriceIsNegativeOrZero() {
+		
+		productDto.setPrice(-5.0);
+
+		ProductService productSpy = Mockito.spy(service);
+		Mockito.doThrow(InvalidDataException.class).when(productSpy).validateData(productDto);
+
+		Assertions.assertThrows(InvalidDataException.class, () -> {
+			@SuppressWarnings("unused")
+			ProductDTO result = productSpy.update(existId, productDto);
 		});
 	}
 }
