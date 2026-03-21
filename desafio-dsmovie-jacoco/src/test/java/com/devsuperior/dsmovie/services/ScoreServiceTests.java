@@ -21,6 +21,7 @@ import com.devsuperior.dsmovie.entities.UserEntity;
 import com.devsuperior.dsmovie.repositories.MovieRepository;
 import com.devsuperior.dsmovie.repositories.ScoreRepository;
 import com.devsuperior.dsmovie.repositories.UserRepository;
+import com.devsuperior.dsmovie.services.exceptions.ResourceNotFoundException;
 import com.devsuperior.dsmovie.tests.MovieFactory;
 import com.devsuperior.dsmovie.tests.ScoreFactory;
 import com.devsuperior.dsmovie.tests.UserFactory;
@@ -71,6 +72,9 @@ public class ScoreServiceTests {
 		movie = MovieFactory.createMovieEntity();
 		score = ScoreFactory.createScoreEntity();
 		
+		score.setMovie(movie);
+		movie.getScores().add(score);
+		
 		scoreDto = ScoreFactory.createScoreDTO();
 		movieDto = MovieFactory.createMovieDTO();
 		
@@ -79,7 +83,7 @@ public class ScoreServiceTests {
 		
 		Mockito.when(movieRepository.findById(existId)).thenReturn(Optional.of(movie));
 		Mockito.when(movieRepository.findById(nonExistId)).thenReturn(Optional.empty());
-		Mockito.when(movieRepository.save(any())).thenReturn(movie); // ✅
+		Mockito.when(movieRepository.save(any())).thenReturn(movie); 
 		
 		Mockito.when(scoreRepository.saveAndFlush(any())).thenReturn(score);
 	}
@@ -87,13 +91,27 @@ public class ScoreServiceTests {
 	@Test
 	public void saveScoreShouldReturnMovieDTO() {
 		
+		ScoreEntity s2 = new ScoreEntity();
+	    s2.setValue(4.5);
+	    movie.getScores().add(s2);
+		
+		ScoreDTO scoreDto = new ScoreDTO(existId, 8.0);
+		
 		MovieDTO result = service.saveScore(scoreDto);
 		
 		Assertions.assertNotNull(result);
 		Assertions.assertEquals(movie.getId(), result.getId());
+		Assertions.assertEquals(4.5, result.getScore());
+		Assertions.assertEquals(2, result.getCount());
 	}
 	
 	@Test
 	public void saveScoreShouldThrowResourceNotFoundExceptionWhenNonExistingMovieId() {
+		
+		ScoreDTO scoreDto = new ScoreDTO(nonExistId, 3.0);
+		
+		Assertions.assertThrows(ResourceNotFoundException.class, () -> {
+			service.saveScore(scoreDto);
+		});
 	}
 }
