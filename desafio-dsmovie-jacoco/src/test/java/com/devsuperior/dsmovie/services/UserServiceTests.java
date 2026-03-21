@@ -1,10 +1,22 @@
 package com.devsuperior.dsmovie.services;
 
+import java.util.Optional;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import com.devsuperior.dsmovie.entities.UserEntity;
+import com.devsuperior.dsmovie.repositories.UserRepository;
+import com.devsuperior.dsmovie.tests.UserFactory;
+import com.devsuperior.dsmovie.utils.CustomUserUtil;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration
@@ -12,13 +24,47 @@ public class UserServiceTests {
 
 	@InjectMocks
 	private UserService service;
+	
+	@Mock
+	private UserRepository repository;
+	
+	@Mock
+	private CustomUserUtil userUtil;
+	
+	private UserEntity user;
+	
+	private String existUsername, nonExistUsername;
+	
+	@BeforeEach
+	void setUp() throws Exception {
+		existUsername = "maria@gmail.com";
+		nonExistUsername = "naoexiste@gmail.com";
+		
+		user = UserFactory.createUserEntity();
+		
+		Mockito.when(repository.findByUsername(existUsername)).thenReturn(Optional.of(user));
+		Mockito.when(repository.findByUsername(nonExistUsername)).thenReturn(Optional.empty());
+	}
 
 	@Test
 	public void authenticatedShouldReturnUserEntityWhenUserExists() {
+		
+		Mockito.when(userUtil.getLoggedUsername()).thenReturn(existUsername);
+		
+		UserEntity result = service.authenticated();
+		
+		Assertions.assertNotNull(result);
+		Assertions.assertEquals(result.getUsername(), existUsername);
 	}
 
 	@Test
 	public void authenticatedShouldThrowUsernameNotFoundExceptionWhenUserDoesNotExists() {
+		
+		Mockito.when(userUtil.getLoggedUsername()).thenThrow(new RuntimeException());
+		
+		Assertions.assertThrows(UsernameNotFoundException.class, () -> {
+			service.authenticated();
+		});
 	}
 
 	@Test
