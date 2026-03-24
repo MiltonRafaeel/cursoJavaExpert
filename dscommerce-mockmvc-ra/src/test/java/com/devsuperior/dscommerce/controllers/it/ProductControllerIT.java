@@ -13,9 +13,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.devsuperior.dscommerce.dto.ProductDTO;
+import com.devsuperior.dscommerce.entities.Category;
 import com.devsuperior.dscommerce.entities.Product;
 import com.devsuperior.dscommerce.tests.TokenUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -50,6 +52,12 @@ public class ProductControllerIT {
 		adminPassword = "123456";
 		
 		productName = "Macbook";
+		
+		Category category = new Category(2L, "Eletro");
+		product = new Product(null, "Console Playstation 5", "Lorem ipsum, dolor...", 3999.99, "https://raw.githubusercontent.com/devsuperior/dscatalog-resources/master/backend/img/1-big.jpg");
+		product.getCategories().add(category);
+		
+		productDto = new ProductDTO(product);
 		
 		adminToken = tokenUtil.obtainAccessToken(mockMvc, adminUsername, adminPassword);
 		clientToken = tokenUtil.obtainAccessToken(mockMvc, clientUsername, clientPassword);
@@ -97,8 +105,18 @@ public class ProductControllerIT {
 		
 		ResultActions result = mockMvc
 				.perform(post("/products")
-						.header("Authorization", "Bearer" + adminToken)
+						.header("Authorization", "Bearer " + adminToken)
 						.content(jsonBody)
-						.accept(MediaType.APPLICATION_JSON));
+						.contentType(MediaType.APPLICATION_JSON)
+						.accept(MediaType.APPLICATION_JSON))
+						.andDo(MockMvcResultHandlers.print());
+		
+		result.andExpect(status().isCreated());
+		result.andExpect(jsonPath("$.id").value(26L));
+		result.andExpect(jsonPath("$.name").value("Console Playstation 5"));
+		result.andExpect(jsonPath("$.description").value("Lorem ipsum, dolor..."));
+		result.andExpect(jsonPath("$.price").value(3999.99));
+		result.andExpect(jsonPath("$.imgUrl").value("https://raw.githubusercontent.com/devsuperior/dscatalog-resources/master/backend/img/1-big.jpg"));
+		result.andExpect(jsonPath("$.categories[0].id").value(2L));
 	}
 }
