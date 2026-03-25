@@ -106,4 +106,17 @@ public class OrderControllerIT {
 		result.andExpect(jsonPath("$.items[1].name").value("Macbook Pro"));
 		result.andExpect(jsonPath("$.total").exists());
 	}
+	
+	@Test
+	public void findByIdShouldReturnForbiddenWhenIdExistsAndClintLoggedAndDoesNotBelongUser() throws Exception {
+		
+		Long otherOrderId = 2L;
+		
+		ResultActions result = mockMvc
+				.perform(get("/orders/{id}", otherOrderId)
+						.header("Authorization", "Bearer " + clientToken)
+						.accept(MediaType.APPLICATION_JSON));
+		
+		result.andExpect(status().isForbidden());
+	}
 }
