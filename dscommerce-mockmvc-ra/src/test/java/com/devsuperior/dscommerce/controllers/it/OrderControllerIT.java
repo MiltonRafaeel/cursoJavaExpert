@@ -141,4 +141,15 @@ public class OrderControllerIT {
 		
 		result.andExpect(status().isNotFound());
 	}
+	
+	@Test
+	public void findByIdShouldReturnUnauthorizedWhenIdExistsAndInvalidToken() throws Exception {
+				
+		ResultActions result = mockMvc
+				.perform(get("/orders/{id}", existOrderId)
+						.header("Authorization", "Bearer " + invalidToken)
+						.accept(MediaType.APPLICATION_JSON));
+		
+		result.andExpect(status().isUnauthorized());
+	}
 }
