@@ -119,4 +119,15 @@ public class OrderControllerIT {
 		
 		result.andExpect(status().isForbidden());
 	}
+	
+	@Test
+	public void findByIdShouldReturnNotFoundWhenIdDoesNotExistsAndAdminLogged() throws Exception {
+				
+		ResultActions result = mockMvc
+				.perform(get("/orders/{id}", nonExistOrderId)
+						.header("Authorization", "Bearer " + adminToken)
+						.accept(MediaType.APPLICATION_JSON));
+		
+		result.andExpect(status().isNotFound());
+	}
 }
