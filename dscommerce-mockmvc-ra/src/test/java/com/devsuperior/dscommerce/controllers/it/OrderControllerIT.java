@@ -86,4 +86,24 @@ public class OrderControllerIT {
 		result.andExpect(jsonPath("$.items").exists());
 		result.andExpect(jsonPath("$.total").exists());
 	}
+	
+	@Test
+	public void findByIdShouldReturnOrderDTOWhenIdExistsAndClintLogged() throws Exception {
+		
+		ResultActions result = mockMvc
+				.perform(get("/orders/{id}", existOrderId)
+						.header("Authorization", "Bearer " + clientToken)
+						.accept(MediaType.APPLICATION_JSON));
+		
+		result.andExpect(status().isOk());
+		result.andExpect(jsonPath("$.id").value(existOrderId));
+		result.andExpect(jsonPath("$.moment").value("2022-07-25T13:00:00Z"));
+		result.andExpect(jsonPath("$.status").value("PAID"));
+		result.andExpect(jsonPath("$.client").exists());
+		result.andExpect(jsonPath("$.client.name").value("Maria Brown"));
+		result.andExpect(jsonPath("$.payment").exists());
+		result.andExpect(jsonPath("$.items").exists());
+		result.andExpect(jsonPath("$.items[1].name").value("Macbook Pro"));
+		result.andExpect(jsonPath("$.total").exists());
+	}
 }
