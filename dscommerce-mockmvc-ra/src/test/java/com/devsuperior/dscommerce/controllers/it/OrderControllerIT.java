@@ -130,4 +130,15 @@ public class OrderControllerIT {
 		
 		result.andExpect(status().isNotFound());
 	}
+	
+	@Test
+	public void findByIdShouldReturnNotFoundWhenIdDoesNotExistsAndClientLogged() throws Exception {
+				
+		ResultActions result = mockMvc
+				.perform(get("/orders/{id}", nonExistOrderId)
+						.header("Authorization", "Bearer " + clientToken)
+						.accept(MediaType.APPLICATION_JSON));
+		
+		result.andExpect(status().isNotFound());
+	}
 }
