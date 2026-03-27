@@ -1,6 +1,7 @@
 package com.devsuperior.dscommerce.controllers.it;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -41,11 +42,11 @@ public class OrderControllerIT {
 	@Autowired
 	private ObjectMapper objectMapper;
 	
-	private String clientUsername, clientPassword, adminUsername, adminPassword;
-	private String adminToken, clientToken, invalidToken;
+	private String clientUsername, clientPassword, adminUsername, adminPassword, adminOnlyUsername, adminOnlyPassword;
+	private String adminToken, clientToken, invalidToken, adminOnlyToken;
 	private Long existOrderId, nonExistOrderId;	
 	private Order order;
-	private OrderDTO OrderDto;
+	private OrderDTO orderDto;
 	private User user;
 	
 	@BeforeEach
@@ -54,6 +55,8 @@ public class OrderControllerIT {
 		clientPassword = "123456";
 		adminUsername = "alex@gmail.com";
 		adminPassword = "123456";
+		adminOnlyUsername = "milton@gmail.com";
+		adminOnlyPassword = "123456";
 		
 		existOrderId = 1L;
 		nonExistOrderId = 100L;
@@ -64,8 +67,11 @@ public class OrderControllerIT {
 		OrderItem orderItem = new OrderItem(order, product, 2, 10.0);
 		order.getItems().add(orderItem);
 		
+		orderDto = new OrderDTO(order);
+		
 		adminToken = tokenUtil.obtainAccessToken(mockMvc, adminUsername, adminPassword);
 		clientToken = tokenUtil.obtainAccessToken(mockMvc, clientUsername, clientPassword);
+		adminOnlyToken = tokenUtil.obtainAccessToken(mockMvc, adminOnlyUsername, adminOnlyPassword);
 		invalidToken = adminToken + "xpto";
 	}
 	
@@ -148,6 +154,70 @@ public class OrderControllerIT {
 		ResultActions result = mockMvc
 				.perform(get("/orders/{id}", existOrderId)
 						.header("Authorization", "Bearer " + invalidToken)
+						.accept(MediaType.APPLICATION_JSON));
+		
+		result.andExpect(status().isUnauthorized());
+	}
+	
+	@Test
+	public void insertShouldReturnOrderIsCreatedWhenClientLogged() throws Exception {
+		
+		String jsonBody = objectMapper.writeValueAsString(orderDto);
+		
+		ResultActions result = mockMvc
+				.perform(post("/orders")
+						.header("Authorization", "Bearer " + clientToken)
+						.content(jsonBody)
+						.contentType(MediaType.APPLICATION_JSON)
+						.accept(MediaType.APPLICATION_JSON));
+		
+		result.andExpect(status().isCreated());
+		result.andExpect(jsonPath("$.items[0].productId").value(1L));
+		result.andExpect(jsonPath("$.items[0].quantity").value(2));
+		result.andExpect(jsonPath("$.moment").exists());
+	}
+	
+	@Test
+	public void insertShouldReturnUnprocessableEntityWhenListItemsIsEmptyAndClientLogged() throws Exception {
+		
+		orderDto.getItems().clear();
+		String jsonBody = objectMapper.writeValueAsString(orderDto);
+		
+		ResultActions result = mockMvc
+				.perform(post("/orders")
+						.header("Authorization", "Bearer " + clientToken)
+						.content(jsonBody)
+						.contentType(MediaType.APPLICATION_JSON)
+						.accept(MediaType.APPLICATION_JSON));
+		
+		result.andExpect(status().isUnprocessableEntity());
+	}
+	
+	@Test
+	public void insertShouldReturnForbiddenWhenAdminLogged() throws Exception {
+		
+		String jsonBody = objectMapper.writeValueAsString(orderDto);
+		
+		ResultActions result = mockMvc
+				.perform(post("/orders")
+						.header("Authorization", "Bearer " + adminOnlyToken)
+						.content(jsonBody)
+						.contentType(MediaType.APPLICATION_JSON)
+						.accept(MediaType.APPLICATION_JSON));
+		
+		result.andExpect(status().isForbidden());
+	}
+	
+	@Test
+	public void insertShouldReturnUnauthorizedWhenInvalidToken() throws Exception {
+		
+		String jsonBody = objectMapper.writeValueAsString(orderDto);
+		
+		ResultActions result = mockMvc
+				.perform(post("/orders")
+						.header("Authorization", "Bearer " + invalidToken)
+						.content(jsonBody)
+						.contentType(MediaType.APPLICATION_JSON)
 						.accept(MediaType.APPLICATION_JSON));
 		
 		result.andExpect(status().isUnauthorized());
