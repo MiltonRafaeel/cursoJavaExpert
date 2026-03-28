@@ -21,7 +21,7 @@ import io.restassured.http.ContentType;
 
 public class ProductControllerRA {
 	
-	private Long existingProductId, nonExistingProductId;
+	private Long existingProductId, nonExistingProductId, dependentProductId;
 	
 	private String productName;
 	private String clientUsername, clientPassword, adminUsername, adminPassword;
@@ -245,6 +245,68 @@ public class ProductControllerRA {
 			.accept(ContentType.JSON)
 		.when()
 			.post("/products")
+		.then()
+			.statusCode(401);
+	}
+	
+	@Test
+	public void deleteShouldReturnNoContentWhenIdExistAndAdminLogged() {
+		existingProductId = 25L;
+		
+		given()
+			.header("Authorization", "Bearer " + adminToken)
+		.when()
+			.delete("/products/{id}", existingProductId)
+		.then()
+			.statusCode(204);
+	}
+	
+	@Test
+	public void deleteShouldReturnNotFoundtWhenIdDoesNotExistAndAdminLogged() {
+		nonExistingProductId = 100L;
+		
+		given()
+			.header("Authorization", "Bearer " + adminToken)
+		.when()
+			.delete("/products/{id}", nonExistingProductId)
+		.then()
+			.statusCode(404)
+			.body("error", equalTo("Recurso não encontrado"))
+			.body("status", equalTo(404));
+	}
+	
+	@Test
+	public void deleteShouldReturnBadRequestWhenDependentIdAndAdminLogged() {
+		dependentProductId = 3L;
+		
+		given()
+			.header("Authorization", "Bearer " + adminToken)
+		.when()
+			.delete("/products/{id}", dependentProductId)
+		.then()
+			.statusCode(400);
+	}
+	
+	@Test
+	public void deleteShouldReturnForbbidenWhenClientLogged() {
+		existingProductId = 25L;
+		
+		given()
+			.header("Authorization", "Bearer " + clientToken)
+		.when()
+			.delete("/products/{id}", existingProductId)
+		.then()
+			.statusCode(403);
+	}
+	
+	@Test
+	public void deleteShouldReturnUnauthorizedWhenInvalidToken() {
+		existingProductId = 25L;
+		
+		given()
+			.header("Authorization", "Bearer " + invalidToken)
+		.when()
+			.delete("/products/{id}", existingProductId)
 		.then()
 			.statusCode(401);
 	}
