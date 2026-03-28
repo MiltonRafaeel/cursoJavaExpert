@@ -53,5 +53,38 @@ public class OrderControllerRA {
 			.body("items.name[1]", equalTo("Macbook Pro"))
 			.body("total", is(1431.0F));
 	}
-
+	
+	@Test
+	public void findByIdShouldReturnOrderWhenIdExistsAndClientLogged() {
+		given()
+			.header("Content-type", "application/json")
+			.header("Authorization", "Bearer " + clientToken)
+			.accept(ContentType.JSON)
+		.when()
+			.get("/orders/{id}", exstingOrderId)
+		.then()
+			.statusCode(200)
+			.body("id", is(1))
+			.body("moment", equalTo("2022-07-25T13:00:00Z"))
+			.body("status", equalTo("PAID"))
+			.body("client.name", equalTo("Maria Brown"))
+			.body("payment.moment", equalTo("2022-07-25T15:00:00Z"))
+			.body("items.name[0]", equalTo("The Lord of the Rings"))
+			.body("items.name[1]", equalTo("Macbook Pro"))
+			.body("total", is(1431.0F));
+	}
+	
+	@Test
+	public void findByIdShouldReturnForbbidenWhenClientLoggedAndOrderDoesNotBelongUser() {
+		Long otherOrder = 2L;
+		
+		given()
+			.header("Content-type", "application/json")
+			.header("Authorization", "Bearer " + clientToken)
+			.accept(ContentType.JSON)
+		.when()
+			.get("/orders/{id}", otherOrder)
+		.then()
+			.statusCode(403);
+	}
 }
