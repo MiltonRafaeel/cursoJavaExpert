@@ -87,4 +87,40 @@ public class OrderControllerRA {
 		.then()
 			.statusCode(403);
 	}
+	
+	@Test
+	public void findByIdShouldReturnNotFoundWhenIdDoesNotExistsAndAdminLogged() {
+		given()
+			.header("Content-type", "application/json")
+			.header("Authorization", "Bearer " + adminToken)
+			.accept(ContentType.JSON)
+		.when()
+			.get("/orders/{id}", nonExistingOrderId)
+		.then()
+			.statusCode(404);
+	}
+	
+	@Test
+	public void findByIdShouldReturnNotFoundWhenIdDoesNotExistsAndClientLogged() {
+		given()
+			.header("Content-type", "application/json")
+			.header("Authorization", "Bearer " + clientToken)
+			.accept(ContentType.JSON)
+		.when()
+			.get("/orders/{id}", nonExistingOrderId)
+		.then()
+			.statusCode(404);
+	}
+	
+	@Test
+	public void findByIdShouldReturnUnauthorizedWhenInvalidToken() {
+		given()
+			.header("Content-type", "application/json")
+			.header("Authorization", "Bearer " + invalidToken)
+			.accept(ContentType.JSON)
+		.when()
+			.get("/orders/{id}", exstingOrderId)
+		.then()
+			.statusCode(401);
+	}
 }
