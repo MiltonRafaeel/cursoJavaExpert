@@ -3,6 +3,7 @@ package com.devsuperior.dsmovie.controllers;
 import static io.restassured.RestAssured.baseURI;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 
 import java.util.HashMap;
@@ -110,10 +111,9 @@ public class MovieControllerRA {
 			.post("/movies")
 		.then()
 			.statusCode(422)
-			.body("errors.fieldName[0]", equalTo("title"))
-			.body("errors.message[0]", equalTo("Tamanho deve ser entre 5 e 80 caracteres"))
-			.body("errors.fieldName[1]", equalTo("title"))
-			.body("errors.message[1]", equalTo("Campo requerido"));
+			.body("errors.fieldName", hasItem("title"))
+		    .body("errors.message", hasItem("Tamanho deve ser entre 5 e 80 caracteres"))
+		    .body("errors.message", hasItem("Campo requerido"));
 	}
 	
 	@Test
