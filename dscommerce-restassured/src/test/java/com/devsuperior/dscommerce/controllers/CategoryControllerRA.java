@@ -15,7 +15,7 @@ public class CategoryControllerRA {
 	}
 	
 	@Test
-	public void findByIdShouldReturnOrderWhenIdExistsAndAdminLogged() {
+	public void findAllShouldReturnCategories() {
 		given()
 			.get("/categories")
 		.then()
